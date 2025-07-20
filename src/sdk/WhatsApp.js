@@ -7,6 +7,7 @@
  */
 
 import { EventEmitter } from 'events';
+import crypto from 'crypto';
 import { WebSocketManager } from '../core/WebSocketManager.js';
 import { QRManager } from '../core/QRManager.js';
 import { AuthManager } from '../core/AuthManager.js';
@@ -196,6 +197,9 @@ export class WhatsApp extends EventEmitter {
             setTimeout(() => {
                 this.handleQRScanned({
                     clientId: this.realProtocol.generateClientId(),
+                    serverRef: crypto.randomBytes(16).toString('base64'),
+                    publicKey: crypto.randomBytes(32).toString('base64'),
+                    secretKey: crypto.randomBytes(32).toString('base64'),
                     sessionToken: this.realProtocol.generateSessionToken(),
                     timestamp: Date.now()
                 });
@@ -203,6 +207,7 @@ export class WhatsApp extends EventEmitter {
             
         } catch (error) {
             this.logger.error('Failed to generate QR:', error);
+            throw error;
         }
     }
     
@@ -211,6 +216,11 @@ export class WhatsApp extends EventEmitter {
      */
     startSimulationMode() {
         this.logger.info('🎭 Starting ChatPulse simulation mode');
+        
+        // Stop any existing WebSocket connections to prevent conflicts
+        if (this.wsManager && this.wsManager.isConnected) {
+            this.wsManager.disconnect();
+        }
         
         setTimeout(() => {
             this.isConnected = true;
@@ -563,6 +573,13 @@ export class WhatsApp extends EventEmitter {
         
         // Switch to simulation mode instead of throwing error
         this.simulationMode = true;
+        
+        // Disconnect WebSocket to prevent reconnection attempts
+        if (this.wsManager) {
+            this.wsManager.reconnectAttempts = this.wsManager.maxReconnectAttempts;
+            this.wsManager.disconnect();
+        }
+        
         this.startSimulationMode();
     }
     

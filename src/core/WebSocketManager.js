@@ -274,6 +274,12 @@ export class WebSocketManager extends EventEmitter {
      * Schedule reconnection attempt
      */
     scheduleReconnect() {
+        // Don't reconnect if we've switched to simulation mode
+        if (this.reconnectAttempts >= this.maxReconnectAttempts) {
+            logger.info('Max reconnection attempts reached, stopping reconnection');
+            return;
+        }
+        
         this.reconnectAttempts++;
         const delay = this.reconnectDelay * Math.pow(2, this.reconnectAttempts - 1); // Exponential backoff
         

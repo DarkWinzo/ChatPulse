@@ -215,6 +215,12 @@ async function startBot() {
         
         await client.connect();
         
+        // Wait a bit for simulation mode to fully initialize
+        setTimeout(() => {
+            console.log('🎮 Bot is ready! Try sending messages in simulation mode.');
+            console.log('📝 Available commands: !help, !ping, !echo, !info, !test');
+        }, 3000);
+        
     } catch (error) {
         console.error('❌ Failed to start bot:', error);
         process.exit(1);
