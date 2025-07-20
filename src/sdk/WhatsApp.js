@@ -113,6 +113,7 @@ export class WhatsApp extends EventEmitter {
         this.packetParser.on('presence.update', this.handlePresenceUpdate.bind(this));
         this.packetParser.on('groups.update', this.handleGroupsUpdate.bind(this));
         this.packetParser.on('error', this.handleParserError.bind(this));
+        this.packetParser.on('protocol.rejected', this.handleProtocolRejection.bind(this));
     }
     
     /**
@@ -428,6 +429,17 @@ export class WhatsApp extends EventEmitter {
     handleParserError(error) {
         this.logger.error('Parser error:', error);
         this.emit('error', error);
+    }
+    
+    handleProtocolRejection(data) {
+        this.logger.error('Protocol rejection from WhatsApp servers:', data.message);
+        
+        const protocolError = new Error(`WhatsApp protocol rejection: ${data.message}`);
+        protocolError.code = 'PROTOCOL_REJECTED';
+        protocolError.reason = data.reason;
+        
+        this.emit('protocol.rejected', protocolError);
+        this.emit('error', protocolError);
     }
     
     handleError(error, context, retryCount) {

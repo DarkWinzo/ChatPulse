@@ -102,6 +102,27 @@ export class PacketParser extends EventEmitter {
             const flags = data.readUInt8(1);
             const length = data.readUInt16BE(2);
             const payload = data.slice(4);
+            // Check for WhatsApp protocol rejection messages
+            const payloadText = payload.toString('utf8');
+            if (payloadText.includes('Text Frames are not supported')) {
+                logger.error('WhatsApp server rejected connection: Text Frames are not supported');
+                logger.error('This indicates the WebSocket protocol implementation is incomplete');
+                
+                // Emit a specific error for protocol rejection
+                this.emit('protocol.rejected', {
+                    message: payloadText,
+                    reason: 'WhatsApp Web protocol implementation incomplete'
+                });
+                
+                return {
+                    type: 'protocol_rejection',
+                    message: payloadText,
+                    messageType,
+                    flags,
+                    raw: data
+                };
+            }
+            
             
             if (payload.length !== length) {
                 throw new Error('Binary packet length mismatch');

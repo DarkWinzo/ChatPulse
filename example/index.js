@@ -174,6 +174,7 @@ if (DEMO_MODE) {
 
     // Event: Errors
     client.on('error', (error) => {
+        console.log(''); // Add spacing for better readability
         console.error('❌ Bot error:', error.message);
         
         // Handle specific errors
@@ -181,11 +182,42 @@ if (DEMO_MODE) {
             console.log('🔧 Connection failed - check your internet connection');
         } else if (error.code === 'AUTH_FAILED') {
             console.log('🔧 Authentication failed - please scan QR code again');
+        } else if (error.code === 'PROTOCOL_REJECTED') {
+            console.log('');
+            console.log('🚫 WHATSAPP PROTOCOL REJECTION:');
+            console.log('📋 Server Response:', error.message);
+            console.log('💡 EXPLANATION: WhatsApp servers rejected the connection');
+            console.log('🔍 TECHNICAL REASON: The WebSocket protocol implementation is incomplete');
+            console.log('🛠️  CURRENT STATUS: ChatPulse is a framework/template requiring full protocol implementation');
+            console.log('✅ RECOMMENDED ACTION: Set DEMO_MODE = true to see bot functionality');
+            console.log('📚 FOR DEVELOPERS: Implement complete WhatsApp Web binary protocol to enable real connections');
+            console.log('');
+            console.log('🛑 Exiting to prevent connection loops...');
+            process.exit(0);
         } else if (error.code === 'INVALID_MESSAGE') {
-            console.log('🔧 Received invalid message format - this indicates incomplete protocol implementation');
-            console.log('💡 This is expected behavior for the current ChatPulse framework');
-            console.log('🛠️  To see bot functionality, set DEMO_MODE = true');
+            console.log('');
+            console.log('🔍 PROTOCOL ERROR DETECTED:');
+            console.log('📋 WhatsApp server message: "Text Frames are not supported"');
+            console.log('💡 EXPLANATION: WhatsApp rejected the connection due to protocol incompatibility');
+            console.log('🛠️  ROOT CAUSE: ChatPulse is a framework that needs complete WhatsApp Web protocol implementation');
+            console.log('✅ SOLUTION: Set DEMO_MODE = true to see bot functionality without real WhatsApp connection');
+            console.log('📝 NOTE: This error is expected and normal for the current implementation');
+            console.log('');
+            
+            // Prevent further connection attempts for protocol errors
+            console.log('🛑 Stopping connection attempts due to protocol incompatibility...');
+            process.exit(0);
         }
+    });
+    
+    // Event: Protocol rejection (specific handler)
+    client.on('protocol.rejected', (error) => {
+        console.log('');
+        console.log('🚫 PROTOCOL REJECTION EVENT:');
+        console.log('📋 WhatsApp servers have rejected the connection');
+        console.log('🔍 This confirms that the current implementation is incomplete');
+        console.log('💡 Switch to DEMO_MODE = true to see how the bot would work');
+        console.log('');
     });
 }
 

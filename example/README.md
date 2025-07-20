@@ -6,10 +6,22 @@ This is a complete example of a WhatsApp bot built using the ChatPulse library.
 
 This example includes a **DEMO MODE** that demonstrates the bot functionality without connecting to real WhatsApp servers. This is because the ChatPulse library shown here is a framework/template that needs a complete WhatsApp Web protocol implementation to work with real WhatsApp servers.
 
-- **Demo Mode (enabled by default)**: Shows bot structure and command handling without real WhatsApp connection
-- **Live Mode**: Attempts real WhatsApp connection (requires complete protocol implementation)
+- **Demo Mode (recommended)**: Shows bot structure and command handling without real WhatsApp connection
+- **Live Mode**: Attempts real WhatsApp connection but will fail with "Text Frames are not supported" error
 
-⚠️ **Important**: The current implementation will show connection errors in Live Mode because it's a framework that requires complete WhatsApp Web protocol implementation.
+⚠️ **Important**: Live Mode will show "Text Frames are not supported" error because WhatsApp servers reject incomplete protocol implementations.
+
+## Expected Behavior in Live Mode
+
+When you set `DEMO_MODE = false`, you will see:
+
+1. ✅ WebSocket connection establishes successfully
+2. 📱 QR code is generated and displayed
+3. ❌ WhatsApp server sends "Text Frames are not supported" 
+4. 🚫 Connection is rejected due to incomplete protocol implementation
+5. 🛑 Bot exits to prevent connection loops
+
+This is **expected behavior** and indicates the framework needs complete WhatsApp Web protocol implementation.
 
 ## Features
 
