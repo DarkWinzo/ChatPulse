@@ -4,10 +4,12 @@ This is a complete example of a WhatsApp bot built using the ChatPulse library.
 
 ## Important Note
 
-This example includes a **DEMO MODE** that demonstrates the bot functionality without connecting to real WhatsApp servers. This is because the ChatPulse library shown here is a framework/template that would need a complete WhatsApp Web protocol implementation to work with real WhatsApp servers.
+This example includes a **DEMO MODE** that demonstrates the bot functionality without connecting to real WhatsApp servers. This is because the ChatPulse library shown here is a framework/template that needs a complete WhatsApp Web protocol implementation to work with real WhatsApp servers.
 
-- **Demo Mode (default)**: Shows bot structure and command handling without real WhatsApp connection
+- **Demo Mode (enabled by default)**: Shows bot structure and command handling without real WhatsApp connection
 - **Live Mode**: Attempts real WhatsApp connection (requires complete protocol implementation)
+
+⚠️ **Important**: The current implementation will show connection errors in Live Mode because it's a framework that requires complete WhatsApp Web protocol implementation.
 
 ## Features
 
@@ -40,6 +42,8 @@ This example includes a **DEMO MODE** that demonstrates the bot functionality wi
        // ... other config
    };
    ```
+3. **Demo Mode**: Keep `DEMO_MODE = true` for demonstration
+4. **Live Mode**: Set `DEMO_MODE = false` only if you have implemented the complete WhatsApp Web protocol
 
 ## Usage
 
@@ -48,8 +52,8 @@ This example includes a **DEMO MODE** that demonstrates the bot functionality wi
    npm start
    ```
 
-2. **Demo Mode**: The bot will simulate receiving messages and show responses
-   **Live Mode**: Scan the QR code with WhatsApp (requires proper implementation)
+2. **Demo Mode (Recommended)**: The bot will simulate receiving messages and show responses
+   **Live Mode**: Will attempt WhatsApp connection but expect errors due to incomplete protocol implementation
 
 3. Send commands to the bot:
    - `!help` - Show available commands
