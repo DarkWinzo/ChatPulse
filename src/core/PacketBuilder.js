@@ -195,6 +195,46 @@ export class PacketBuilder {
     }
     
     /**
+     * Build poll vote packet
+     */
+    buildPollVotePacket(pollId, optionIds, voterId) {
+        const packet = {
+            type: 'poll_vote',
+            pollId,
+            optionIds,
+            voterId,
+            timestamp: Date.now()
+        };
+        
+        if (this.credentials) {
+            packet.from = this.credentials.clientId;
+            packet.signature = this.signPacket(packet);
+        }
+        
+        logger.trace('📦 Built poll vote packet', { pollId, optionIds, voterId });
+        return JSON.stringify(packet);
+    }
+    
+    /**
+     * Build close poll packet
+     */
+    buildClosePollPacket(pollId) {
+        const packet = {
+            type: 'close_poll',
+            pollId,
+            timestamp: Date.now()
+        };
+        
+        if (this.credentials) {
+            packet.from = this.credentials.clientId;
+            packet.signature = this.signPacket(packet);
+        }
+        
+        logger.trace('📦 Built close poll packet', { pollId });
+        return JSON.stringify(packet);
+    }
+    
+    /**
      * Build button message packet
      */
     buildButtonMessagePacket(chatId, text, buttons, footer = null) {
