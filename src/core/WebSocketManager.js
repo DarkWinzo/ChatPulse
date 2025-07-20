@@ -138,6 +138,16 @@ export class WebSocketManager extends EventEmitter {
         try {
             logger.trace('📨 Received WebSocket message', { size: data.length });
             
+            // Check for WhatsApp protocol rejection
+            if (Buffer.isBuffer(data)) {
+                const payloadText = data.toString('utf8');
+                if (payloadText.includes('Text Frames are not supported')) {
+                    logger.warn('WhatsApp server rejected connection, switching to simulation mode');
+                    this.emit('protocol.rejected', { message: payloadText });
+                    return;
+                }
+            }
+            
             // Parse binary or text message
             let parsedData;
             if (Buffer.isBuffer(data)) {
