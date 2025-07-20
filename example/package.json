@@ -1,0 +1,22 @@
+{
+  "name": "chatpulse-bot-example",
+  "version": "1.0.0",
+  "description": "Example WhatsApp bot using ChatPulse library",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "start": "node index.js",
+    "dev": "node --watch index.js"
+  },
+  "keywords": [
+    "whatsapp",
+    "bot",
+    "chatpulse",
+    "example"
+  ],
+  "author": "DarkWinzo",
+  "license": "MIT",
+  "dependencies": {
+    "chatpulse": "^1.0.0"
+  }
+}
