@@ -37,66 +37,131 @@ const BOT_CONFIG = {
     }
 };
 
-// Event: QR Code for authentication
-client.on('qr', (qr) => {
-    console.log('📱 Scan this QR code with WhatsApp:');
-    console.log(qr);
-    console.log('\nOr use a QR code scanner app to scan the code above.');
-});
+// Demo mode flag - set to true for demonstration without real WhatsApp connection
+const DEMO_MODE = true;
 
-// Event: Connection updates
-client.on('connection.update', (update) => {
-    const { connection, lastDisconnect } = update;
+if (DEMO_MODE) {
+    console.log('🎭 DEMO MODE: Running ChatPulse bot example in demonstration mode');
+    console.log('📝 This example shows the bot structure and event handling');
+    console.log('🔧 To connect to real WhatsApp, set DEMO_MODE = false and ensure proper WhatsApp Web protocol implementation');
+    console.log('');
     
-    if (connection === 'close') {
-        const shouldReconnect = lastDisconnect?.error?.output?.statusCode !== 401;
-        console.log('❌ Connection closed due to:', lastDisconnect?.error);
+    // Simulate bot events for demonstration
+    setTimeout(() => {
+        console.log('📱 [DEMO] QR Code would be displayed here for real connection');
+        console.log('🔗 [DEMO] QR: demo_qr_code_here');
+    }, 1000);
+    
+    setTimeout(() => {
+        console.log('✅ [DEMO] Connection established (simulated)');
+        console.log('🤖 [DEMO] Bot is now active and ready to receive messages');
         
-        if (shouldReconnect) {
-            console.log('🔄 Reconnecting...');
-            connectBot();
-        } else {
-            console.log('🚫 Please scan QR code again');
-        }
-    } else if (connection === 'open') {
-        console.log('✅ Connected to WhatsApp successfully!');
-        console.log('🤖 Bot is now active and ready to receive messages');
-    }
-});
-
-// Event: Authentication success
-client.on('auth.success', (credentials) => {
-    console.log('🔐 Authentication successful');
-});
-
-// Event: Authentication failed
-client.on('auth.failed', (error) => {
-    console.log('❌ Authentication failed:', error.message);
-});
-
-// Event: Incoming messages
-client.on('messages.upsert', async ({ messages, type }) => {
-    if (type !== 'notify') return;
+        // Simulate incoming message
+        setTimeout(() => {
+            simulateIncomingMessage();
+        }, 2000);
+    }, 2000);
     
-    for (const message of messages) {
-        await handleMessage(message);
-    }
-});
+    // Keep demo running
+    setInterval(() => {
+        console.log('💓 [DEMO] Bot heartbeat - still running...');
+    }, 30000);
+    
+} else {
+    // Real WhatsApp connection mode
+    console.log('🚀 Starting real WhatsApp connection...');
+    console.log('⚠️  Note: This requires a complete WhatsApp Web protocol implementation');
+    
+    // Event: QR Code for authentication
+    client.on('qr', (qr) => {
+        console.log('📱 Scan this QR code with WhatsApp:');
+        console.log(qr);
+        console.log('\nOr use a QR code scanner app to scan the code above.');
+    });
 
-// Event: Message reactions
-client.on('messages.reaction', ({ key, reaction }) => {
-    console.log(`👍 Reaction received: ${reaction.text} on message ${key.id}`);
-});
+    // Event: Connection updates
+    client.on('connection.update', (update) => {
+        const { connection, lastDisconnect } = update;
+        
+        if (connection === 'close') {
+            const shouldReconnect = lastDisconnect?.error?.output?.statusCode !== 401;
+            console.log('❌ Connection closed due to:', lastDisconnect?.error);
+            
+            if (shouldReconnect) {
+                console.log('🔄 Reconnecting...');
+                connectBot();
+            } else {
+                console.log('🚫 Please scan QR code again');
+            }
+        } else if (connection === 'open') {
+            console.log('✅ Connected to WhatsApp successfully!');
+            console.log('🤖 Bot is now active and ready to receive messages');
+        }
+    });
 
-// Event: Presence updates (typing, online status)
-client.on('presence.update', ({ id, presences }) => {
-    console.log(`👤 Presence update for ${id}:`, presences);
-});
+    // Event: Authentication success
+    client.on('auth.success', (credentials) => {
+        console.log('🔐 Authentication successful');
+    });
 
-// Event: Errors
-client.on('error', (error) => {
-    console.error('❌ Bot error:', error.message);
-});
+    // Event: Authentication failed
+    client.on('auth.failed', (error) => {
+        console.log('❌ Authentication failed:', error.message);
+    });
+
+    // Event: Incoming messages
+    client.on('messages.upsert', async ({ messages, type }) => {
+        if (type !== 'notify') return;
+        
+        for (const message of messages) {
+            await handleMessage(message);
+        }
+    });
+
+    // Event: Message reactions
+    client.on('messages.reaction', ({ key, reaction }) => {
+        console.log(`👍 Reaction received: ${reaction.text} on message ${key.id}`);
+    });
+
+    // Event: Presence updates (typing, online status)
+    client.on('presence.update', ({ id, presences }) => {
+        console.log(`👤 Presence update for ${id}:`, presences);
+    });
+
+    // Event: Errors
+    client.on('error', (error) => {
+        console.error('❌ Bot error:', error.message);
+        
+        // Handle specific errors
+        if (error.code === 'CONNECTION_FAILED') {
+            console.log('🔧 Connection failed - check your internet connection');
+        } else if (error.code === 'AUTH_FAILED') {
+            console.log('🔧 Authentication failed - please scan QR code again');
+        } else if (error.code === 'INVALID_MESSAGE') {
+            console.log('🔧 Received invalid message format - this may indicate protocol changes');
+        }
+    });
+}
+
+/**
+ * Simulate incoming message for demo
+ */
+function simulateIncomingMessage() {
+    console.log('📨 [DEMO] Simulating incoming message...');
+    
+    const demoMessage = {
+        key: {
+            fromMe: false,
+            remoteJid: '1234567890@s.whatsapp.net'
+        },
+        message: {
+            conversation: '!help'
+        }
+    };
+    
+    console.log('📨 Message from 1234567890: !help');
+    handleMessage(demoMessage);
+}
 
 /**
  * Handle incoming messages
@@ -113,13 +178,13 @@ async function handleMessage(message) {
         const isGroup = message.key.remoteJid.endsWith('@g.us');
         const chatId = message.key.remoteJid;
         
-        console.log(`📨 Message from ${senderNumber}: ${messageText}`);
+        console.log(`📨 Processing message from ${senderNumber}: ${messageText}`);
         
         // Check if message starts with bot prefix
         if (!messageText.startsWith(BOT_CONFIG.prefix)) {
             // Send welcome message for first-time users (non-command messages)
             if (!isGroup && messageText.toLowerCase().includes('hello')) {
-                await client.sendMessage(chatId, BOT_CONFIG.welcomeMessage);
+                await sendMessage(chatId, BOT_CONFIG.welcomeMessage);
             }
             return;
         }
@@ -174,16 +239,28 @@ async function handleCommand(command, args, chatId, senderNumber, originalMessag
                 if (BOT_CONFIG.adminNumbers.includes(senderNumber)) {
                     await handleAdminCommand(chatId, args);
                 } else {
-                    await client.sendMessage(chatId, '❌ You are not authorized to use admin commands.');
+                    await sendMessage(chatId, '❌ You are not authorized to use admin commands.');
                 }
                 break;
                 
             default:
-                await client.sendMessage(chatId, `❓ Unknown command: ${command}\nType ${BOT_CONFIG.prefix}help for available commands.`);
+                await sendMessage(chatId, `❓ Unknown command: ${command}\nType ${BOT_CONFIG.prefix}help for available commands.`);
         }
     } catch (error) {
         console.error(`Error handling command ${command}:`, error);
-        await client.sendMessage(chatId, '❌ An error occurred while processing your command.');
+        await sendMessage(chatId, '❌ An error occurred while processing your command.');
+    }
+}
+
+/**
+ * Send message wrapper (handles both demo and real mode)
+ */
+async function sendMessage(chatId, text) {
+    if (DEMO_MODE) {
+        console.log(`📤 [DEMO] Sending to ${chatId}: ${text}`);
+        return { success: true, demo: true };
+    } else {
+        return await client.sendMessage(chatId, text);
     }
 }
 
@@ -199,46 +276,49 @@ async function handleHelpCommand(chatId) {
     
     helpText += `\n_Powered by ChatPulse WhatsApp API_`;
     
-    await client.sendMessage(chatId, helpText);
+    await sendMessage(chatId, helpText);
 }
 
 async function handlePingCommand(chatId) {
     const startTime = Date.now();
-    await client.sendMessage(chatId, '🏓 Pong!');
+    await sendMessage(chatId, '🏓 Pong!');
     const endTime = Date.now();
     
-    await client.sendMessage(chatId, `⚡ Response time: ${endTime - startTime}ms`);
+    await sendMessage(chatId, `⚡ Response time: ${endTime - startTime}ms`);
 }
 
 async function handleEchoCommand(chatId, args) {
     if (args.length === 0) {
-        await client.sendMessage(chatId, '❓ Please provide a message to echo.\nExample: !echo Hello World');
+        await sendMessage(chatId, '❓ Please provide a message to echo.\nExample: !echo Hello World');
         return;
     }
     
     const echoText = args.join(' ');
-    await client.sendMessage(chatId, `🔊 Echo: ${echoText}`);
+    await sendMessage(chatId, `🔊 Echo: ${echoText}`);
 }
 
 async function handleInfoCommand(chatId) {
-    const connectionState = client.getConnectionState();
-    
-    const infoText = `🤖 *Bot Information*
+    let infoText = `🤖 *Bot Information*
 
-📱 *Status:* ${connectionState.isConnected ? 'Online' : 'Offline'}
-🔐 *Authenticated:* ${connectionState.isAuthenticated ? 'Yes' : 'No'}
-🔗 *Connection:* ${connectionState.connection}
+📱 *Status:* ${DEMO_MODE ? 'Demo Mode' : 'Live Mode'}
+🔐 *Mode:* ${DEMO_MODE ? 'Demonstration' : 'Production'}
 📦 *Library:* ChatPulse v1.0.0
 ⚡ *Uptime:* ${Math.floor(process.uptime())} seconds
 
 _Developed with ChatPulse WhatsApp API_`;
 
-    await client.sendMessage(chatId, infoText);
+    if (!DEMO_MODE) {
+        const connectionState = client.getConnectionState();
+        infoText = infoText.replace('Demo Mode', connectionState.isConnected ? 'Online' : 'Offline');
+        infoText = infoText.replace('Demonstration', connectionState.isAuthenticated ? 'Authenticated' : 'Not Authenticated');
+    }
+
+    await sendMessage(chatId, infoText);
 }
 
 async function handlePollCommand(chatId, args) {
     if (args.length < 3) {
-        await client.sendMessage(chatId, '❓ Usage: !poll <question> <option1> <option2> [option3...]');
+        await sendMessage(chatId, '❓ Usage: !poll <question> <option1> <option2> [option3...]');
         return;
     }
     
@@ -246,13 +326,18 @@ async function handlePollCommand(chatId, args) {
     const options = args.slice(1);
     
     if (options.length < 2) {
-        await client.sendMessage(chatId, '❌ Poll must have at least 2 options.');
+        await sendMessage(chatId, '❌ Poll must have at least 2 options.');
         return;
     }
     
-    await client.sendPoll(chatId, question, options, {
-        multipleChoice: false
-    });
+    if (DEMO_MODE) {
+        console.log(`📊 [DEMO] Creating poll: "${question}" with options: ${options.join(', ')}`);
+        await sendMessage(chatId, `📊 Poll created: "${question}"\nOptions: ${options.join(', ')}`);
+    } else {
+        await client.sendPoll(chatId, question, options, {
+            multipleChoice: false
+        });
+    }
 }
 
 async function handleButtonsCommand(chatId) {
@@ -262,12 +347,17 @@ async function handleButtonsCommand(chatId) {
         { id: 'btn3', text: '😂 Haha' }
     ];
     
-    await client.sendButtons(
-        chatId,
-        '🔘 *Button Example*\n\nChoose your reaction:',
-        buttons,
-        'ChatPulse Bot Demo'
-    );
+    if (DEMO_MODE) {
+        console.log(`🔘 [DEMO] Sending buttons: ${buttons.map(b => b.text).join(', ')}`);
+        await sendMessage(chatId, `🔘 Button message would show: ${buttons.map(b => b.text).join(', ')}`);
+    } else {
+        await client.sendButtons(
+            chatId,
+            '🔘 *Button Example*\n\nChoose your reaction:',
+            buttons,
+            'ChatPulse Bot Demo'
+        );
+    }
 }
 
 async function handleListCommand(chatId) {
@@ -288,17 +378,29 @@ async function handleListCommand(chatId) {
         }
     ];
     
-    await client.sendList(
-        chatId,
-        '📋 *Menu Selection*\n\nChoose from our menu:',
-        'View Menu',
-        sections
-    );
+    if (DEMO_MODE) {
+        console.log(`📋 [DEMO] Sending list with ${sections.length} sections`);
+        let listText = '📋 Menu Selection:\n';
+        sections.forEach(section => {
+            listText += `\n${section.title}:\n`;
+            section.rows.forEach(row => {
+                listText += `- ${row.title}: ${row.description}\n`;
+            });
+        });
+        await sendMessage(chatId, listText);
+    } else {
+        await client.sendList(
+            chatId,
+            '📋 *Menu Selection*\n\nChoose from our menu:',
+            'View Menu',
+            sections
+        );
+    }
 }
 
 async function handleAdminCommand(chatId, args) {
     if (args.length === 0) {
-        await client.sendMessage(chatId, '🔧 *Admin Commands*\n\n!admin status - Bot status\n!admin restart - Restart bot');
+        await sendMessage(chatId, '🔧 *Admin Commands*\n\n!admin status - Bot status\n!admin restart - Restart bot');
         return;
     }
     
@@ -309,26 +411,38 @@ async function handleAdminCommand(chatId, args) {
             const stats = {
                 uptime: Math.floor(process.uptime()),
                 memory: Math.round(process.memoryUsage().heapUsed / 1024 / 1024),
-                connection: client.getConnectionState()
+                mode: DEMO_MODE ? 'Demo' : 'Live'
             };
             
-            await client.sendMessage(chatId, `📊 *Bot Status*\n\nUptime: ${stats.uptime}s\nMemory: ${stats.memory}MB\nConnection: ${stats.connection.connection}`);
+            await sendMessage(chatId, `📊 *Bot Status*\n\nUptime: ${stats.uptime}s\nMemory: ${stats.memory}MB\nMode: ${stats.mode}`);
             break;
             
         case 'restart':
-            await client.sendMessage(chatId, '🔄 Restarting bot...');
+            await sendMessage(chatId, '🔄 Restarting bot...');
             process.exit(0);
             break;
             
+        case 'demo':
+            if (args[1] === 'off') {
+                console.log('🔧 Switching to live mode (requires proper WhatsApp implementation)');
+                await sendMessage(chatId, '⚠️ Switching to live mode - this requires proper WhatsApp Web protocol implementation');
+            }
+            break;
+            
         default:
-            await client.sendMessage(chatId, '❓ Unknown admin command.');
+            await sendMessage(chatId, '❓ Unknown admin command.');
     }
 }
 
 /**
- * Connect the bot
+ * Connect the bot (only in live mode)
  */
 async function connectBot() {
+    if (DEMO_MODE) {
+        console.log('🎭 Demo mode active - skipping real connection');
+        return;
+    }
+    
     try {
         console.log('🚀 Starting ChatPulse WhatsApp Bot...');
         await client.connect();
@@ -345,7 +459,9 @@ async function connectBot() {
 process.on('SIGINT', async () => {
     console.log('\n🛑 Shutting down bot...');
     try {
-        await client.disconnect();
+        if (!DEMO_MODE) {
+            await client.disconnect();
+        }
         console.log('✅ Bot disconnected successfully');
         process.exit(0);
     } catch (error) {
@@ -363,4 +479,10 @@ process.on('unhandledRejection', (reason, promise) => {
 });
 
 // Start the bot
-connectBot();
+if (DEMO_MODE) {
+    console.log('🎭 Starting in demo mode...');
+    console.log('💡 To test commands, the bot will simulate receiving "!help"');
+    console.log('🔧 Set DEMO_MODE = false for real WhatsApp connection (requires proper implementation)');
+} else {
+    connectBot();
+}

@@ -2,6 +2,13 @@
 
 This is a complete example of a WhatsApp bot built using the ChatPulse library.
 
+## Important Note
+
+This example includes a **DEMO MODE** that demonstrates the bot functionality without connecting to real WhatsApp servers. This is because the ChatPulse library shown here is a framework/template that would need a complete WhatsApp Web protocol implementation to work with real WhatsApp servers.
+
+- **Demo Mode (default)**: Shows bot structure and command handling without real WhatsApp connection
+- **Live Mode**: Attempts real WhatsApp connection (requires complete protocol implementation)
+
 ## Features
 
 - 🤖 **Command System** - Prefix-based commands (!help, !ping, etc.)
@@ -41,7 +48,8 @@ This is a complete example of a WhatsApp bot built using the ChatPulse library.
    npm start
    ```
 
-2. Scan the QR code with WhatsApp
+2. **Demo Mode**: The bot will simulate receiving messages and show responses
+   **Live Mode**: Scan the QR code with WhatsApp (requires proper implementation)
 
 3. Send commands to the bot:
    - `!help` - Show available commands
@@ -129,6 +137,11 @@ await client.sendDocument(chatId, './path/to/file.pdf', 'filename.pdf');
 
 ## Troubleshooting
 
+### Demo vs Live Mode
+- The example runs in **Demo Mode** by default to show functionality
+- To enable **Live Mode**, set `DEMO_MODE = false` in `index.js`
+- Live mode requires a complete WhatsApp Web protocol implementation
+
 ### QR Code Issues
 - Make sure WhatsApp Web is not open in browser
 - Try restarting the bot if QR doesn't appear
@@ -138,6 +151,7 @@ await client.sendDocument(chatId, './path/to/file.pdf', 'filename.pdf');
 - Verify your internet connection
 - Check if WhatsApp servers are accessible
 - Review console logs for error details
+- Note: The current implementation is a framework that needs complete protocol implementation
 
 ### Command Not Working
 - Ensure message starts with correct prefix (default: `!`)
