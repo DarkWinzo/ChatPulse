@@ -219,6 +219,7 @@ async function startBot() {
         setTimeout(() => {
             console.log('🎮 Bot is ready! Try sending messages in simulation mode.');
             console.log('📝 Available commands: !help, !ping, !echo, !info, !test');
+            console.log('💡 The bot is running in simulation mode - no real WhatsApp connection needed!');
         }, 3000);
         
     } catch (error) {

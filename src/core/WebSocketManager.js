@@ -274,7 +274,7 @@ export class WebSocketManager extends EventEmitter {
      * Schedule reconnection attempt
      */
     scheduleReconnect() {
-        // Don't reconnect if we've reached max attempts or if parent is in simulation mode
+        // Don't reconnect if we've reached max attempts or if in simulation mode
         if (this.reconnectAttempts >= this.maxReconnectAttempts || this.simulationMode) {
             logger.info('Max reconnection attempts reached, stopping reconnection');
             return;
