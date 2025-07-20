@@ -43,5 +43,9 @@
   "devDependencies": {
     "vitest": "^1.2.0",
     "@types/node": "^20.11.0"
+  },
+  "optionalDependencies": {
+    "whatsapp-web.js": "^1.23.0",
+    "qrcode-terminal": "^0.12.0"
   }
 }

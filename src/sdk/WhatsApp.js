@@ -19,6 +19,7 @@ import { PollHandler } from '../handlers/PollHandler.js';
 import { logger, Logger } from '../utils/Logger.js';
 import { errorHandler, ErrorHandler } from '../utils/ErrorHandler.js';
 import { WHATSAPP_CONSTANTS } from '../utils/Constants.js';
+import { RealWhatsAppClient } from '../core/RealWhatsAppClient.js';
 
 export class WhatsApp extends EventEmitter {
     constructor(options = {}) {
@@ -66,6 +67,9 @@ export class WhatsApp extends EventEmitter {
         this.packetBuilder = new PacketBuilder();
         this.packetParser = new PacketParser();
         
+        // Initialize real WhatsApp client bridge
+        this.realClient = new RealWhatsAppClient(this);
+        
         // Initialize handlers
         this.messageHandler = new MessageHandler(this);
         this.mediaHandler = new MediaHandler(this);
@@ -79,6 +83,9 @@ export class WhatsApp extends EventEmitter {
         
         // Setup event listeners
         this.setupEventListeners();
+        
+        // Setup real client events
+        this.setupRealClientEvents();
         
         this.logger.info('🚀 ChatPulse WhatsApp client initialized', {
             sessionId: this.config.sessionId,
@@ -117,22 +124,33 @@ export class WhatsApp extends EventEmitter {
     }
     
     /**
+     * Setup real client event listeners
+     */
+    setupRealClientEvents() {
+        this.realClient.on('qr', (qr) => {
+            this.emit('qr', qr);
+        });
+        
+        this.realClient.on('connection.update', (update) => {
+            this.connectionState = update.connection;
+            this.isConnected = update.connection === 'open';
+            this.emit('connection.update', update);
+        });
+        
+        this.realClient.on('messages.upsert', (data) => {
+            this.emit('messages.upsert', data);
+        });
+    }
+    
+    /**
      * Connect to WhatsApp Web
      */
     async connect() {
         try {
             this.logger.info('🔄 Starting WhatsApp connection...');
             
-            // Try to load existing session first
-            const existingSession = await this.authManager.loadSession();
-            
-            if (existingSession) {
-                this.logger.info('📱 Using existing session');
-                await this.connectWithSession(existingSession);
-            } else {
-                this.logger.info('🔗 Starting new session with QR code');
-                await this.connectWithQR();
-            }
+            // Use real client for connection
+            await this.realClient.connect();
             
         } catch (error) {
             this.logger.error('Failed to connect:', error);
@@ -145,63 +163,14 @@ export class WhatsApp extends EventEmitter {
     }
     
     /**
-     * Connect using existing session
-     */
-    async connectWithSession(session) {
-        try {
-            // Update components with session credentials
-            this.packetBuilder.updateCredentials(session.credentials);
-            this.packetParser.updateCredentials(session.credentials);
-            
-            // Connect to WebSocket
-            await this.wsManager.connect();
-            
-            // Send authentication packet
-            const authPacket = this.packetBuilder.buildAuthPacket(session.credentials);
-            await this.wsManager.send(authPacket);
-            
-            this.isAuthenticated = true;
-            
-        } catch (error) {
-            this.logger.error('Failed to connect with session:', error);
-            // Fall back to QR connection
-            await this.connectWithQR();
-        }
-    }
-    
-    /**
-     * Connect using QR code
-     */
-    async connectWithQR() {
-        try {
-            // Connect to WebSocket
-            await this.wsManager.connect();
-            
-            // Send handshake
-            const handshakePacket = this.packetBuilder.buildHandshakePacket();
-            await this.wsManager.send(handshakePacket);
-            
-            // Generate QR code
-            await this.qrManager.generateQR({ ref: 'new_session' });
-            
-        } catch (error) {
-            this.logger.error('Failed to connect with QR:', error);
-            throw error;
-        }
-    }
-    
-    /**
      * Disconnect from WhatsApp
      */
     async disconnect() {
         try {
             this.logger.info('👋 Disconnecting from WhatsApp...');
             
-            // Clear QR manager
-            this.qrManager.clear();
-            
-            // Disconnect WebSocket
-            this.wsManager.disconnect();
+            // Disconnect real client
+            await this.realClient.disconnect();
             
             // Update state
             this.isConnected = false;
@@ -225,7 +194,18 @@ export class WhatsApp extends EventEmitter {
      * Send text message
      */
     async sendMessage(to, text, options = {}) {
-        return this.messageHandler.sendText(to, text, options);
+        try {
+            // Use real client for sending
+            const result = await this.realClient.sendMessage(to, text, options);
+            
+            // Also update message handler for consistency
+            this.messageHandler.updateRateLimit();
+            
+            return result;
+        } catch (error) {
+            // Fallback to original handler
+            return this.messageHandler.sendText(to, text, options);
+        }
     }
     
     /**
@@ -317,9 +297,10 @@ export class WhatsApp extends EventEmitter {
             connection: this.connectionState,
             isConnected: this.isConnected,
             isAuthenticated: this.isAuthenticated,
-            wsState: this.wsManager.getState(),
-            qrStatus: this.qrManager.getStatus(),
-            authStatus: this.authManager.getAuthStatus()
+            realClientState: this.realClient.getState(),
+            wsState: this.wsManager?.getState() || 'not_used',
+            qrStatus: this.qrManager?.getStatus() || 'not_used',
+            authStatus: this.authManager?.getAuthStatus() || 'not_used'
         };
     }
     
@@ -329,7 +310,9 @@ export class WhatsApp extends EventEmitter {
     async logout() {
         try {
             await this.disconnect();
-            await this.authManager.logout();
+            if (this.authManager) {
+                await this.authManager.logout();
+            }
             
             this.logger.info('✅ Logged out successfully');
             
