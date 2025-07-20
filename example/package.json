@@ -1,5 +1,5 @@
 {
-  "name": "chatpulse-bot-example",
+  "name": "chatpulse-example",
   "version": "1.0.0",
   "description": "Example WhatsApp bot using ChatPulse library",
   "main": "index.js",
@@ -17,7 +17,6 @@
   "author": "DarkWinzo",
   "license": "MIT",
   "dependencies": {
-    "chatpulse": "^1.0.0",
-    "qrcode": "^1.5.3"
+    "chatpulse": "^1.0.0"
   }
 }

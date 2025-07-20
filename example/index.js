@@ -1,27 +1,27 @@
 /**
- * Pure ChatPulse WhatsApp Bot
- * This example uses ONLY the ChatPulse npm package without any external WhatsApp libraries
+ * ChatPulse WhatsApp Bot Example
+ * Pure implementation using only ChatPulse npm package
  * 
  * Installation:
  * npm install chatpulse
  * 
  * Usage:
- * node example/pure-chatpulse-bot.js
+ * node example/index.js
  */
 
 import { WhatsApp } from 'chatpulse';
 
 // Bot configuration
 const BOT_CONFIG = {
-    sessionId: 'pure-chatpulse-bot',
+    sessionId: 'chatpulse-bot',
     prefix: '!',
     adminNumbers: ['1234567890'], // Add your phone number here
-    welcomeMessage: 'Hello! I am a pure ChatPulse WhatsApp bot. Type !help for commands.',
+    welcomeMessage: 'Hello! I am a ChatPulse WhatsApp bot. Type !help for commands.',
     logLevel: 'info',
     enableFileLogging: true
 };
 
-// Initialize ChatPulse client (no external dependencies)
+// Initialize ChatPulse client
 const client = new WhatsApp({
     sessionId: BOT_CONFIG.sessionId,
     sessionDir: './sessions',
@@ -35,13 +35,13 @@ const commands = {
     help: {
         description: 'Show available commands',
         handler: async (message, args) => {
-            let helpText = '🤖 *Pure ChatPulse Bot Commands*\n\n';
+            let helpText = '🤖 *ChatPulse Bot Commands*\n\n';
             
             Object.entries(commands).forEach(([cmd, info]) => {
                 helpText += `${BOT_CONFIG.prefix}${cmd} - ${info.description}\n`;
             });
             
-            helpText += '\n_Powered by Pure ChatPulse (No External Dependencies)_';
+            helpText += '\n_Powered by ChatPulse_';
             
             await client.sendMessage(message.key.remoteJid, helpText);
         }
@@ -82,39 +82,18 @@ const commands = {
         handler: async (message, args) => {
             const state = client.getConnectionState();
             
-            let infoText = `🤖 *Pure ChatPulse Bot Information*
+            let infoText = `🤖 *ChatPulse Bot Information*
 
 📱 *Status:* ${state.isConnected ? 'Connected' : 'Disconnected'}
 🔐 *Authenticated:* ${state.isAuthenticated ? 'Yes' : 'No'}
-📦 *Library:* Pure ChatPulse v1.0.0
+📦 *Library:* ChatPulse v1.0.0
 🎭 *Mode:* ${state.simulationMode ? 'Simulation' : 'Real Protocol'}
 ⚡ *Uptime:* ${Math.floor(process.uptime())} seconds
 🔧 *Protocol:* ${state.protocolStatus.implemented ? 'Implemented' : 'Not Implemented'}
 
-_Built with Pure ChatPulse - No External Dependencies_`;
+_Built with ChatPulse_`;
 
             await client.sendMessage(message.key.remoteJid, infoText);
-        }
-    },
-    
-    status: {
-        description: 'Get detailed bot status',
-        handler: async (message, args) => {
-            const state = client.getConnectionState();
-            
-            const statusText = `📊 *Bot Status*
-
-Connection: ${state.connection}
-Connected: ${state.isConnected}
-Authenticated: ${state.isAuthenticated}
-Simulation Mode: ${state.simulationMode}
-WebSocket State: ${state.wsState}
-Session ID: ${BOT_CONFIG.sessionId}
-
-Protocol Implementation:
-${state.protocolStatus.implementedComponents.map(comp => `✅ ${comp}`).join('\n')}`;
-
-            await client.sendMessage(message.key.remoteJid, statusText);
         }
     },
     
@@ -123,35 +102,15 @@ ${state.protocolStatus.implementedComponents.map(comp => `✅ ${comp}`).join('\n
         handler: async (message, args) => {
             await client.sendMessage(
                 message.key.remoteJid, 
-                '🧪 Pure ChatPulse Test:\n✅ Message sending works\n✅ Command parsing works\n✅ Event handling works\n✅ No external dependencies!'
+                '🧪 ChatPulse Test:\n✅ Message sending works\n✅ Command parsing works\n✅ Event handling works'
             );
-        }
-    },
-    
-    protocol: {
-        description: 'Show protocol implementation status',
-        handler: async (message, args) => {
-            const state = client.getConnectionState();
-            const protocol = state.protocolStatus;
-            
-            let protocolText = `🔧 *ChatPulse Protocol Status*
-
-Implementation: ${protocol.implemented ? '✅ Complete' : '❌ Incomplete'}
-Status: ${protocol.status}
-
-Implemented Components:
-${protocol.implementedComponents.map(comp => `✅ ${comp}`).join('\n')}
-
-Note: ${protocol.note}`;
-
-            await client.sendMessage(message.key.remoteJid, protocolText);
         }
     }
 };
 
 // Event: QR Code for authentication
 client.on('qr', (qr) => {
-    console.log('📱 QR Code received from Pure ChatPulse!');
+    console.log('📱 QR Code received from ChatPulse!');
     console.log('QR Code:', qr);
     console.log('\n📱 Instructions:');
     console.log('1. Open WhatsApp on your phone');
@@ -172,8 +131,8 @@ client.on('connection.update', (update) => {
             console.log('📋 Error details:', lastDisconnect.error.message || lastDisconnect.error);
         }
     } else if (connection === 'open') {
-        console.log('✅ Connected to WhatsApp using Pure ChatPulse!');
-        console.log('🤖 Pure ChatPulse bot is now active and ready to receive messages');
+        console.log('✅ Connected to WhatsApp using ChatPulse!');
+        console.log('🤖 ChatPulse bot is now active and ready to receive messages');
         console.log('🎭 Running in simulation mode for demonstration');
     }
 });
@@ -244,8 +203,8 @@ async function handleMessage(message) {
  */
 async function startBot() {
     try {
-        console.log('🚀 Starting Pure ChatPulse WhatsApp Bot...');
-        console.log('📦 Using ONLY ChatPulse npm package (no external WhatsApp libraries)');
+        console.log('🚀 Starting ChatPulse WhatsApp Bot...');
+        console.log('📦 Using ChatPulse npm package');
         console.log('⚙️ Configuration:', {
             sessionId: BOT_CONFIG.sessionId,
             prefix: BOT_CONFIG.prefix,
@@ -266,7 +225,7 @@ async function startBot() {
  * Graceful shutdown
  */
 process.on('SIGINT', async () => {
-    console.log('\n🛑 Shutting down Pure ChatPulse bot...');
+    console.log('\n🛑 Shutting down ChatPulse bot...');
     try {
         await client.disconnect();
         console.log('✅ Bot disconnected successfully');

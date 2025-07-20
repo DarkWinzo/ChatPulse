@@ -36,19 +36,9 @@
   },
   "dependencies": {
     "ws": "^8.16.0",
-    "qrcode": "^1.5.3",
-    "crypto": "^1.0.1"
+    "qrcode": "^1.5.3"
   },
   "devDependencies": {
-    "vitest": "^1.2.0",
-    "@types/node": "^20.11.0"
-  },
-  "peerDependencies": {
-    "whatsapp-web.js": "^1.23.0"
-  },
-  "peerDependenciesMeta": {
-    "whatsapp-web.js": {
-      "optional": true
-    }
+    "vitest": "^1.2.0"
   }
 }
