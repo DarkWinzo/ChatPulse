@@ -149,18 +149,25 @@ if (DEMO_MODE) {
 function simulateIncomingMessage() {
     console.log('📨 [DEMO] Simulating incoming message...');
     
-    const demoMessage = {
-        key: {
-            fromMe: false,
-            remoteJid: '1234567890@s.whatsapp.net'
-        },
-        message: {
-            conversation: '!help'
-        }
-    };
+    // Test different commands
+    const testCommands = ['!help', '!ping', '!echo Hello World', '!info', '!poll "Favorite Color?" Red Blue Green'];
     
-    console.log('📨 Message from 1234567890: !help');
-    handleMessage(demoMessage);
+    testCommands.forEach((command, index) => {
+        setTimeout(() => {
+            const demoMessage = {
+                key: {
+                    fromMe: false,
+                    remoteJid: '1234567890@s.whatsapp.net'
+                },
+                message: {
+                    conversation: command
+                }
+            };
+            
+            console.log(`📨 Message from 1234567890: ${command}`);
+            handleMessage(demoMessage);
+        }, index * 3000); // 3 second delay between commands
+    });
 }
 
 /**
