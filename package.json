@@ -1,0 +1,47 @@
+{
+  "name": "chatpulse",
+  "version": "1.0.0",
+  "description": "Advanced WhatsApp Web API Library - Production-grade reverse-engineered WhatsApp Web client",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "start": "node index.js",
+    "test": "vitest",
+    "test:watch": "vitest --watch",
+    "cli": "node src/cli/index.js",
+    "dev": "node --watch index.js"
+  },
+  "keywords": [
+    "whatsapp",
+    "whatsapp-web",
+    "whatsapp-api",
+    "websocket",
+    "messaging",
+    "chatbot",
+    "automation"
+  ],
+  "author": {
+    "name": "DarkWinzo",
+    "email": "isurulakshan9998@gmail.com",
+    "url": "https://github.com/DarkWinzo"
+  },
+  "organization": "DarkSide Developer Team",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/DarkSide-Developers/ChatPulse.git"
+  },
+  "license": "MIT",
+  "engines": {
+    "node": ">=16.0.0"
+  },
+  "dependencies": {
+    "ws": "^8.16.0",
+    "qrcode": "^1.5.3",
+    "crypto": "^1.0.1",
+    "fs": "^0.0.1-security"
+  },
+  "devDependencies": {
+    "vitest": "^1.2.0",
+    "@types/node": "^20.11.0"
+  }
+}

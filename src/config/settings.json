@@ -1,0 +1,64 @@
+{
+  "logging": {
+    "level": "info",
+    "enableFile": false,
+    "enableConsole": true,
+    "colorize": true
+  },
+  "connection": {
+    "pingInterval": 30000,
+    "reconnectDelay": 5000,
+    "maxReconnectAttempts": 10,
+    "connectionTimeout": 30000
+  },
+  "authentication": {
+    "qrTimeout": 60000,
+    "authTimeout": 300000,
+    "autoSave": true,
+    "sessionDir": "./sessions"
+  },
+  "messages": {
+    "retryAttempts": 3,
+    "retryDelay": 1000,
+    "queueSize": 100,
+    "rateLimit": {
+      "enabled": true,
+      "maxMessages": 20,
+      "timeWindow": 60000
+    }
+  },
+  "media": {
+    "uploadTimeout": 120000,
+    "downloadTimeout": 60000,
+    "maxFileSize": {
+      "image": 16777216,
+      "video": 67108864,
+      "audio": 16777216,
+      "document": 104857600
+    },
+    "supportedTypes": {
+      "image": ["jpg", "jpeg", "png", "gif", "webp"],
+      "video": ["mp4", "avi", "mov", "mkv", "3gp"],
+      "audio": ["mp3", "wav", "ogg", "aac", "m4a"],
+      "document": ["pdf", "doc", "docx", "xls", "xlsx", "ppt", "pptx", "txt"]
+    }
+  },
+  "features": {
+    "enableGroups": true,
+    "enableMedia": true,
+    "enablePolls": true,
+    "enableButtons": true,
+    "enableLists": true,
+    "enableReactions": true,
+    "enablePresence": true
+  },
+  "security": {
+    "enableEncryption": true,
+    "enableSignatureVerification": true,
+    "sessionEncryption": true
+  },
+  "localization": {
+    "language": "en",
+    "timezone": "UTC"
+  }
+}
