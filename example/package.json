@@ -17,6 +17,7 @@
   "author": "DarkWinzo",
   "license": "MIT",
   "dependencies": {
-    "chatpulse": "^1.0.0"
+    "chatpulse": "^1.0.0",
+    "qrcode": "^1.5.3"
   }
 }

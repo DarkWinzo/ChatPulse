@@ -10,6 +10,7 @@
  */
 
 import { WhatsApp } from 'chatpulse';
+import QRCode from 'qrcode';
 
 // Initialize WhatsApp client
 const client = new WhatsApp({
@@ -38,7 +39,7 @@ const BOT_CONFIG = {
 };
 
 // Demo mode flag - set to true for demonstration without real WhatsApp connection
-const DEMO_MODE = true;
+const DEMO_MODE = false; // Set to false for real WhatsApp connection
 
 if (DEMO_MODE) {
     console.log('🎭 DEMO MODE: Running ChatPulse bot example in demonstration mode');
@@ -74,9 +75,31 @@ if (DEMO_MODE) {
     
     // Event: QR Code for authentication
     client.on('qr', (qr) => {
-        console.log('📱 Scan this QR code with WhatsApp:');
-        console.log(qr);
-        console.log('\nOr use a QR code scanner app to scan the code above.');
+        console.log('📱 QR Code received! Generating scannable QR...\n');
+        
+        // Display QR code in terminal
+        QRCode.toString(qr, { type: 'terminal', small: true }, (err, qrString) => {
+            if (err) {
+                console.error('❌ Failed to generate QR code:', err);
+                console.log('📱 Raw QR data:', qr);
+            } else {
+                console.log('📱 Scan this QR code with WhatsApp:\n');
+                console.log(qrString);
+                console.log('\n🔗 Raw QR data (if terminal QR doesn\'t work):');
+                console.log(qr);
+                console.log('\n📱 Instructions:');
+                console.log('1. Open WhatsApp on your phone');
+                console.log('2. Go to Settings > Linked Devices');
+                console.log('3. Tap "Link a Device"');
+                console.log('4. Scan the QR code above');
+                console.log('\n⏰ QR code will expire in 60 seconds...\n');
+            }
+        });
+    });
+
+    // Event: QR code expired
+    client.on('qr.expired', () => {
+        console.log('⏰ QR code expired! Generating new one...');
     });
 
     // Event: Connection updates
