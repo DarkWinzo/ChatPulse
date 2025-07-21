@@ -110,14 +110,10 @@ _Built with ChatPulse_`;
 
 // Event: QR Code for authentication
 client.on('qr', (qr) => {
-    console.log('📱 QR Code received from ChatPulse!');
-    console.log('QR Code:', qr);
-    console.log('\n📱 Instructions:');
-    console.log('1. Open WhatsApp on your phone');
-    console.log('2. Go to Settings > Linked Devices');
-    console.log('3. Tap "Link a Device"');
-    console.log('4. Scan the QR code above');
-    console.log('\n⏰ QR code will be auto-processed in 5 seconds for demo...\n');
+    // QR code is already displayed by the WhatsApp client
+    // Just show additional instructions
+    console.log('🔗 QR Code is ready for scanning!');
+    console.log('📱 Use your WhatsApp mobile app to scan the code above');
 });
 
 // Event: Connection updates
@@ -125,15 +121,22 @@ client.on('connection.update', (update) => {
     const { connection, lastDisconnect } = update;
     
     if (connection === 'close') {
-        console.log('❌ Connection closed');
+        if (!client.simulationMode) {
+            console.log('❌ Connection closed');
+        }
         
         if (lastDisconnect?.error) {
             console.log('📋 Error details:', lastDisconnect.error.message || lastDisconnect.error);
         }
     } else if (connection === 'open') {
-        console.log('✅ Connected to WhatsApp using ChatPulse!');
-        console.log('🤖 ChatPulse bot is now active and ready to receive messages');
-        console.log('🎭 Running in simulation mode for demonstration');
+        if (client.simulationMode) {
+            console.log('✅ Connected to WhatsApp using ChatPulse!');
+            console.log('🤖 ChatPulse bot is now active and ready to receive messages');
+            console.log('🎭 Running in simulation mode for demonstration');
+        } else {
+            console.log('✅ Successfully connected to WhatsApp!');
+            console.log('🤖 ChatPulse bot is now active and ready to receive real messages');
+        }
     }
 });
 
@@ -210,16 +213,18 @@ async function startBot() {
             prefix: BOT_CONFIG.prefix,
             logLevel: BOT_CONFIG.logLevel
         });
-        console.log('🎭 Will run in simulation mode for demonstration');
+        console.log('🔗 Attempting to connect to WhatsApp...');
         console.log('');
         
         await client.connect();
         
-        // Wait a bit for simulation mode to fully initialize
+        // Only show simulation mode message if we're actually in simulation mode
         setTimeout(() => {
-            console.log('🎮 Bot is ready! Try sending messages in simulation mode.');
-            console.log('📝 Available commands: !help, !ping, !echo, !info, !test');
-            console.log('💡 The bot is running in simulation mode - no real WhatsApp connection needed!');
+            if (client.simulationMode) {
+                console.log('🎮 Bot is ready! Try sending messages in simulation mode.');
+                console.log('📝 Available commands: !help, !ping, !echo, !info, !test');
+                console.log('💡 The bot is running in simulation mode - no real WhatsApp connection needed!');
+            }
         }, 3000);
         
     } catch (error) {

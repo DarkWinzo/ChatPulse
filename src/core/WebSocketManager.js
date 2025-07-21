@@ -274,9 +274,15 @@ export class WebSocketManager extends EventEmitter {
      * Schedule reconnection attempt
      */
     scheduleReconnect() {
-        // Don't reconnect if we've reached max attempts or if in simulation mode
-        if (this.reconnectAttempts >= this.maxReconnectAttempts || this.simulationMode) {
+        // Don't reconnect if we've reached max attempts
+        if (this.reconnectAttempts >= this.maxReconnectAttempts) {
             logger.info('Max reconnection attempts reached, stopping reconnection');
+            return;
+        }
+        
+        // Don't reconnect if in simulation mode
+        if (this.simulationMode) {
+            logger.info('In simulation mode, stopping reconnection attempts');
             return;
         }
         
@@ -286,7 +292,7 @@ export class WebSocketManager extends EventEmitter {
         logger.info(`🔄 Scheduling reconnection attempt ${this.reconnectAttempts}/${this.maxReconnectAttempts} in ${delay}ms`);
         
         setTimeout(() => {
-            if (!this.isConnected && !this.isConnecting && !this.simulationMode) {
+            if (!this.isConnected && !this.isConnecting) {
                 this.emit('connection.update', { connection: 'connecting' });
                 this.connect().catch(error => {
                     logger.error('Reconnection failed:', error);
