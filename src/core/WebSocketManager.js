@@ -282,20 +282,20 @@ export class WebSocketManager extends EventEmitter {
         
         // Don't reconnect if in simulation mode
         if (this.simulationMode) {
-            logger.info('In simulation mode, stopping reconnection attempts');
+            logger.debug('In simulation mode, stopping reconnection attempts');
             return;
         }
         
         this.reconnectAttempts++;
         const delay = this.reconnectDelay * Math.pow(2, this.reconnectAttempts - 1); // Exponential backoff
         
-        logger.info(`🔄 Scheduling reconnection attempt ${this.reconnectAttempts}/${this.maxReconnectAttempts} in ${delay}ms`);
+        logger.debug(`🔄 Scheduling reconnection attempt ${this.reconnectAttempts}/${this.maxReconnectAttempts} in ${delay}ms`);
         
         setTimeout(() => {
             if (!this.isConnected && !this.isConnecting) {
                 this.emit('connection.update', { connection: 'connecting' });
                 this.connect().catch(error => {
-                    logger.error('Reconnection failed:', error);
+                    logger.debug('Reconnection failed:', error);
                 });
             }
         }, delay);

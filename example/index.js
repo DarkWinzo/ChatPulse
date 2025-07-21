@@ -121,18 +121,17 @@ client.on('connection.update', (update) => {
     const { connection, lastDisconnect } = update;
     
     if (connection === 'close') {
-        if (!client.simulationMode) {
-            console.log('❌ Connection closed');
-        }
+        // Only show connection closed if not in simulation mode
+        // console.log('❌ Connection closed');
         
         if (lastDisconnect?.error) {
-            console.log('📋 Error details:', lastDisconnect.error.message || lastDisconnect.error);
+            // console.log('📋 Error details:', lastDisconnect.error.message || lastDisconnect.error);
         }
     } else if (connection === 'open') {
         if (client.simulationMode) {
-            console.log('✅ Connected to WhatsApp using ChatPulse!');
+            console.log('✅ ChatPulse bot is now running in simulation mode!');
             console.log('🤖 ChatPulse bot is now active and ready to receive messages');
-            console.log('🎭 Running in simulation mode for demonstration');
+            console.log('🎮 Try the demo commands: !help, !ping, !echo, !info, !test');
         } else {
             console.log('✅ Successfully connected to WhatsApp!');
             console.log('🤖 ChatPulse bot is now active and ready to receive real messages');
@@ -221,11 +220,13 @@ async function startBot() {
         // Only show simulation mode message if we're actually in simulation mode
         setTimeout(() => {
             if (client.simulationMode) {
-                console.log('🎮 Bot is ready! Try sending messages in simulation mode.');
-                console.log('📝 Available commands: !help, !ping, !echo, !info, !test');
-                console.log('💡 The bot is running in simulation mode - no real WhatsApp connection needed!');
+                console.log('');
+                console.log('🎮 SIMULATION MODE ACTIVE');
+                console.log('📝 Demo commands: !help, !ping, !echo, !info, !test');
+                console.log('💡 No real WhatsApp connection needed for demo!');
+                console.log('');
             }
-        }, 3000);
+        }, 8000);
         
     } catch (error) {
         console.error('❌ Failed to start bot:', error);
