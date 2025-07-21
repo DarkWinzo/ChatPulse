@@ -1,12 +1,22 @@
 # ChatPulse - Pure WhatsApp Web API Library
 
-**ChatPulse** is a pure WhatsApp Web API library built with JavaScript (Node.js). It provides a clean, standalone WhatsApp bot framework with **zero external WhatsApp dependencies**.
+**ChatPulse** is a demonstration WhatsApp Web API library built with JavaScript (Node.js). It shows the basic structure and concepts of WhatsApp Web protocol implementation.
+
+## ⚠️ Important Notice
+
+**ChatPulse is a demonstration library** that shows how WhatsApp Web protocol might work. However, **WhatsApp servers reject unofficial clients**, so this library cannot connect to real WhatsApp servers.
+
+### For Real WhatsApp Integration, Use:
+
+1. **[Baileys](https://github.com/WhiskeySockets/Baileys)** - Most complete unofficial WhatsApp Web API
+2. **[whatsapp-web.js](https://github.com/pedroslopez/whatsapp-web.js)** - Puppeteer-based WhatsApp Web API
+3. **[WhatsApp Business API](https://developers.facebook.com/docs/whatsapp)** - Official WhatsApp API
 
 ## 🚀 Features
 
-- **Pure Implementation** - No external WhatsApp libraries required
-- **Built-in Protocol** - Basic WhatsApp Web protocol implementation
-- **Simulation Mode** - Perfect for development and testing
+- **Educational Purpose** - Learn WhatsApp Web protocol concepts
+- **Clean Architecture** - Well-structured codebase for learning
+- **Protocol Demonstration** - Shows how WhatsApp Web protocol works
 - **Clean Architecture** - Modular, maintainable design
 - **Event System** - Reactive message handling
 - **Command Framework** - Easy command registration and handling
@@ -19,7 +29,7 @@
 npm install chatpulse
 ```
 
-## 🔧 Quick Start
+## 🔧 Quick Start (Educational/Demo)
 
 ```javascript
 import { WhatsApp } from 'chatpulse';
@@ -43,12 +53,29 @@ await client.connect();
 await client.sendMessage('1234567890@s.whatsapp.net', 'Hello from ChatPulse!');
 ```
 
-## 📖 Quick Example
+## 🎮 Demo Mode
+
+Since WhatsApp rejects unofficial clients, ChatPulse includes a demo mode for learning:
 
 ```bash
-# Run the example bot
+# Run the demo bot
 node example/pure-chatpulse-bot.js
 ```
+
+## 🔧 For Real WhatsApp Bots
+
+### Option 1: Baileys (Recommended)
+```bash
+npm install @whiskeysockets/baileys
+```
+
+### Option 2: whatsapp-web.js
+```bash
+npm install whatsapp-web.js
+```
+
+### Option 3: WhatsApp Business API
+Use the official WhatsApp Business API for production applications.
 
 ## 🤝 Contributing
 
@@ -78,12 +105,15 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## ⚠️ Disclaimer
 
-This library is not affiliated with WhatsApp Inc. It's an independent implementation for educational and development purposes. The library includes simulation mode for safe development and testing.
+This library is not affiliated with WhatsApp Inc. It's an educational implementation showing WhatsApp Web protocol concepts. **WhatsApp servers reject unofficial clients**, so this library cannot connect to real WhatsApp.
+
+For real WhatsApp integration, use official APIs or established libraries like Baileys or whatsapp-web.js.
 
 ## 🙏 Acknowledgments
 
 - WhatsApp for the messaging platform
 - The open-source community for inspiration
+- Baileys and whatsapp-web.js for real WhatsApp integration solutions
 
 ---
 

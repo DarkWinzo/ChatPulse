@@ -121,21 +121,15 @@ client.on('connection.update', (update) => {
     const { connection, lastDisconnect } = update;
     
     if (connection === 'close') {
-        // Only show connection closed if not in simulation mode
-        // console.log('❌ Connection closed');
+        console.log('❌ Connection closed');
         
         if (lastDisconnect?.error) {
-            // console.log('📋 Error details:', lastDisconnect.error.message || lastDisconnect.error);
+            console.log('📋 Error details:', lastDisconnect.error.message || lastDisconnect.error);
         }
     } else if (connection === 'open') {
-        if (client.simulationMode) {
-            console.log('✅ ChatPulse bot is now running in simulation mode!');
-            console.log('🤖 ChatPulse bot is now active and ready to receive messages');
-            console.log('🎮 Try the demo commands: !help, !ping, !echo, !info, !test');
-        } else {
-            console.log('✅ Successfully connected to WhatsApp!');
-            console.log('🤖 ChatPulse bot is now active and ready to receive real messages');
-        }
+        console.log('✅ Successfully connected to real WhatsApp!');
+        console.log('🤖 ChatPulse bot is now active and ready to receive real messages');
+        console.log('📱 You can now send messages to your bot from WhatsApp!');
     }
 });
 
@@ -151,6 +145,14 @@ client.on('messages.upsert', async ({ messages, type }) => {
 // Event: Errors
 client.on('error', (error) => {
     console.error('❌ Bot error:', error.message);
+    
+    if (error.message.includes('WhatsApp connection rejected')) {
+        console.log('\n💡 To connect to real WhatsApp, you need:');
+        console.log('1. WhatsApp Business API (Official)');
+        console.log('2. A more complete library like Baileys');
+        console.log('3. Browser automation with Puppeteer');
+        console.log('\nChatPulse is a demonstration library showing WhatsApp protocol basics.');
+    }
 });
 
 /**
@@ -212,24 +214,22 @@ async function startBot() {
             prefix: BOT_CONFIG.prefix,
             logLevel: BOT_CONFIG.logLevel
         });
-        console.log('🔗 Attempting to connect to WhatsApp...');
+        console.log('🔗 Attempting to connect to REAL WhatsApp...');
+        console.log('⚠️  Note: WhatsApp may reject unofficial clients');
         console.log('');
         
         await client.connect();
         
-        // Only show simulation mode message if we're actually in simulation mode
-        setTimeout(() => {
-            if (client.simulationMode) {
-                console.log('');
-                console.log('🎮 SIMULATION MODE ACTIVE');
-                console.log('📝 Demo commands: !help, !ping, !echo, !info, !test');
-                console.log('💡 No real WhatsApp connection needed for demo!');
-                console.log('');
-            }
-        }, 8000);
-        
     } catch (error) {
         console.error('❌ Failed to start bot:', error);
+        
+        if (error.message.includes('WhatsApp connection rejected')) {
+            console.log('\n🔧 SOLUTION: Use a real WhatsApp library like:');
+            console.log('• npm install @whiskeysockets/baileys');
+            console.log('• npm install whatsapp-web.js');
+            console.log('• Use WhatsApp Business API');
+        }
+        
         process.exit(1);
     }
 }

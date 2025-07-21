@@ -156,17 +156,12 @@ export class WhatsApp extends EventEmitter {
             if (existingSession) {
                 this.logger.info('📱 Using existing session');
                 this.isAuthenticated = true;
-                await this.connectWithSession(existingSession);
+                await this.connectWithRealWhatsApp(existingSession);
                 return;
             }
             
-            // Try real WhatsApp connection first
-            try {
-                await this.connectToWhatsApp();
-            } catch (connectionError) {
-                this.logger.warn('Real WhatsApp connection failed, generating QR for authentication');
-                await this.generateQR();
-            }
+            // Connect to real WhatsApp
+            await this.connectToRealWhatsApp();
             
         } catch (error) {
             this.logger.error('Failed to connect:', error);
@@ -175,19 +170,71 @@ export class WhatsApp extends EventEmitter {
     }
     
     /**
-     * Connect to WhatsApp with real protocol
+     * Connect to real WhatsApp Web
      */
-    async connectToWhatsApp() {
+    async connectToRealWhatsApp() {
         try {
-            // Initialize WebSocket connection
+            this.logger.info('🔗 Connecting to real WhatsApp Web...');
+            
+            // Initialize WebSocket connection to WhatsApp
             await this.wsManager.connect();
             
-            // Generate QR for authentication
+            // Wait for connection to be established
+            await this.waitForConnection();
+            
+            // Generate QR code for authentication
             await this.generateQR();
             
+            // Wait for QR scan (real, not simulated)
+            await this.waitForQRScan();
+            
         } catch (error) {
-            throw error;
+            this.logger.error('Real WhatsApp connection failed:', error);
+            throw new Error('Failed to connect to real WhatsApp. Please check your internet connection and try again.');
         }
+    }
+    
+    /**
+     * Wait for WebSocket connection
+     */
+    async waitForConnection(timeout = 30000) {
+        return new Promise((resolve, reject) => {
+            if (this.wsManager.isReady()) {
+                resolve();
+                return;
+            }
+            
+            const timeoutId = setTimeout(() => {
+                reject(new Error('Connection timeout'));
+            }, timeout);
+            
+            const onOpen = () => {
+                clearTimeout(timeoutId);
+                this.wsManager.off('open', onOpen);
+                resolve();
+            };
+            
+            this.wsManager.on('open', onOpen);
+        });
+    }
+    
+    /**
+     * Wait for real QR scan (not simulated)
+     */
+    async waitForQRScan(timeout = 60000) {
+        return new Promise((resolve, reject) => {
+            const timeoutId = setTimeout(() => {
+                reject(new Error('QR scan timeout - please scan the QR code within 60 seconds'));
+            }, timeout);
+            
+            const onQRScanned = (credentials) => {
+                clearTimeout(timeoutId);
+                this.qrManager.off('qr.scanned', onQRScanned);
+                resolve(credentials);
+            };
+            
+            this.qrManager.on('qr.scanned', onQRScanned);
+        });
     }
     
     /**
@@ -210,20 +257,20 @@ export class WhatsApp extends EventEmitter {
             
             this.emit('qr', qrData);
             
-            // Simulate QR scan after 5 seconds for demo
+            // Store QR data for real scanning
+            this.currentQRData = { qrData, clientId, serverRef, publicKey };
+            
+            // Set up QR expiration (60 seconds)
             setTimeout(() => {
                 if (!this.isAuthenticated) {
-                    this.logger.info('📱 Simulating QR code scan for demo...');
-                    this.simulateQRScan(qrData, clientId, serverRef, publicKey);
+                    this.logger.warn('⏰ QR code expired, generating new one...');
+                    this.generateQR();
                 }
-            }, 5000);
+            }, 60000);
             
         } catch (error) {
             this.logger.error('Failed to generate QR code:', error);
-            // Fallback to simulation mode if QR generation fails
-            this.logger.info('🎭 Falling back to simulation mode...');
-            this.simulationMode = true;
-            this.startSimulationMode();
+            throw error;
         }
     }
     
@@ -235,35 +282,43 @@ export class WhatsApp extends EventEmitter {
         console.log('📱 WHATSAPP QR CODE - SCAN WITH YOUR PHONE');
         console.log('='.repeat(80));
         console.log('');
-        console.log('QR Data:', qrData);
+        console.log('🔗 QR Code Data:');
+        console.log(qrData);
         console.log('');
+        console.log('📋 Or use a QR code generator to create a scannable QR code from the data above');
         console.log('='.repeat(80));
         console.log('📱 INSTRUCTIONS:');
         console.log('1. Open WhatsApp on your phone');
         console.log('2. Go to Settings > Linked Devices');
         console.log('3. Tap "Link a Device"');
-        console.log('4. Scan the QR code data above');
+        console.log('4. Scan the QR code (generate from data above)');
         console.log('');
-        console.log('⏰ Waiting for QR code scan...');
+        console.log('⏰ Waiting for QR code scan... (60 seconds timeout)');
+        console.log('💡 Note: You need to generate a QR code image from the data above');
         console.log('='.repeat(80));
         console.log('');
     }
     
     /**
-     * Simulate QR scan for demo purposes
+     * Handle real QR scan from WhatsApp mobile app
      */
-    async simulateQRScan(qrData, clientId, serverRef, publicKey) {
+    async handleRealQRScan(scanData) {
         try {
-            console.log('✅ QR Code scanned successfully! (Simulated)');
+            console.log('✅ QR Code scanned successfully!');
             console.log('🔐 Authenticating with WhatsApp...');
             
-            // Create mock credentials
+            // Validate scan data
+            if (!scanData || !scanData.clientId) {
+                throw new Error('Invalid QR scan data received');
+            }
+            
+            // Create real credentials from scan
             const credentials = {
-                clientId,
-                serverRef,
-                publicKey,
-                secretKey: crypto.randomBytes(32).toString('base64'),
-                privateKey: crypto.randomBytes(32).toString('base64'),
+                clientId: scanData.clientId,
+                serverRef: scanData.serverRef,
+                publicKey: scanData.publicKey,
+                secretKey: scanData.secretKey,
+                privateKey: scanData.privateKey,
                 timestamp: Date.now()
             };
             
@@ -271,92 +326,17 @@ export class WhatsApp extends EventEmitter {
             await this.authManager.authenticate(credentials);
             
             this.isAuthenticated = true;
-            this.simulationMode = false;
             
             console.log('✅ Authentication successful!');
-            console.log('🤖 Bot is now connected to WhatsApp!');
+            console.log('🤖 Bot is now connected to real WhatsApp!');
             
-            // Stop any WebSocket reconnection attempts
-            if (this.wsManager) {
-                this.wsManager.simulationMode = true;
-                this.wsManager.disconnect();
-            }
-            
-            // Start simulation mode for demo
-            setTimeout(() => {
-                this.simulationMode = true;
-                this.startSimulationMode();
-            }, 1000);
+            // Emit authentication success
+            this.emit('auth.success', credentials);
             
         } catch (error) {
-            this.logger.error('QR scan simulation failed:', error);
-            this.simulationMode = true;
-            this.startSimulationMode();
+            this.logger.error('QR scan authentication failed:', error);
+            throw error;
         }
-    }
-    
-    /**
-     * Start simulation mode for development
-     */
-    startSimulationMode() {
-        if (this.simulationModeStarted) {
-            return; // Prevent multiple starts
-        }
-        
-        this.simulationModeStarted = true;
-        this.logger.info('🎭 Starting ChatPulse simulation mode for demonstration');
-        
-        // Stop any existing WebSocket connections to prevent conflicts
-        if (this.wsManager && this.wsManager.isConnected) {
-            this.wsManager.simulationMode = true;
-            this.wsManager.disconnect();
-        }
-        
-        setTimeout(() => {
-            this.isConnected = true;
-            this.isAuthenticated = true;
-            this.connectionState = 'open';
-            
-            this.emit('connection.update', { connection: 'open' });
-            
-            // Simulate incoming messages for testing
-            setTimeout(() => {
-                this.simulateIncomingMessages();
-            }, 2000);
-        }, 1000);
-    }
-    
-    /**
-     * Simulate incoming messages for testing
-     */
-    simulateIncomingMessages() {
-        const testMessages = [
-            { text: '!help', from: '1234567890@s.whatsapp.net' },
-            { text: '!ping', from: '0987654321@s.whatsapp.net' },
-            { text: '!info', from: '1234567890@s.whatsapp.net' }
-        ];
-        
-        testMessages.forEach((msg, index) => {
-            setTimeout(() => {
-                const simulatedMessage = {
-                    key: {
-                        fromMe: false,
-                        remoteJid: msg.from,
-                        id: `sim_${Date.now()}_${index}`
-                    },
-                    message: {
-                        conversation: msg.text
-                    },
-                    messageTimestamp: Date.now()
-                };
-                
-                this.logger.info(`📨 [SIMULATION] Received: ${msg.text} from ${msg.from}`);
-                this.emit('messages.upsert', {
-                    messages: [simulatedMessage],
-                    type: 'notify'
-                });
-            }, (index + 1) * 5000);
-        });
     }
     
     /**
@@ -394,18 +374,15 @@ export class WhatsApp extends EventEmitter {
      */
     async sendMessage(to, text, options = {}) {
         try {
-            if (this.simulationMode) {
-                // Simulation mode
-                this.logger.info(`📤 [SIMULATION] Sending to ${to}: ${text}`);
-                return {
-                    messageId: `sim_${Date.now()}`,
-                    to,
-                    success: true,
-                    simulation: true
-                };
+            if (!this.isAuthenticated) {
+                throw new Error('Not authenticated. Please scan QR code first.');
             }
             
-            // Real protocol implementation
+            if (!this.wsManager.isReady()) {
+                throw new Error('WebSocket connection not ready');
+            }
+            
+            // Real WhatsApp message sending
             const message = {
                 to: this.formatJid(to),
                 content: text,
@@ -414,10 +391,7 @@ export class WhatsApp extends EventEmitter {
             };
             
             const encodedMessage = this.realProtocol.encodeMessage(message);
-            
-            if (this.wsManager.isReady()) {
-                await this.wsManager.send(encodedMessage);
-            }
+            await this.wsManager.send(encodedMessage);
             
             this.logger.info(`📤 Sent message to ${to}`);
             
@@ -541,7 +515,7 @@ export class WhatsApp extends EventEmitter {
             connection: this.connectionState,
             isConnected: this.isConnected,
             isAuthenticated: this.isAuthenticated,
-            simulationMode: this.simulationMode,
+            simulationMode: false,
             protocolStatus: this.realProtocol.getImplementationStatus(),
             wsState: this.wsManager?.getState() || 'not_used',
             qrStatus: this.qrManager?.getStatus() || 'not_used',
@@ -678,25 +652,25 @@ export class WhatsApp extends EventEmitter {
     }
     
     handleProtocolRejection(data) {
-        this.logger.info('🎭 WhatsApp protocol rejection detected - this is expected for unofficial clients');
+        this.logger.error('❌ WhatsApp protocol rejection detected');
+        this.logger.error('🚫 WhatsApp servers do not accept unofficial clients');
         
-        // If we get protocol rejection, it means WhatsApp doesn't accept our connection
-        // This is expected for unofficial clients
-        if (!this.isAuthenticated) {
-            this.logger.info('🎭 Switching to simulation mode for demonstration');
-            
-            // Stop WebSocket reconnection attempts
-            if (this.wsManager) {
-                this.wsManager.simulationMode = true;
-                this.wsManager.disconnect();
-            }
-            
-            // Start simulation mode if not already started
-            if (!this.simulationModeStarted) {
-                this.simulationMode = true;
-                this.startSimulationMode();
-            }
-        }
+        console.log('\n' + '='.repeat(80));
+        console.log('❌ REAL WHATSAPP CONNECTION FAILED');
+        console.log('='.repeat(80));
+        console.log('🚫 WhatsApp servers rejected the connection');
+        console.log('💡 This is expected for unofficial WhatsApp clients');
+        console.log('');
+        console.log('🔧 ALTERNATIVES FOR REAL WHATSAPP CONNECTION:');
+        console.log('1. Use WhatsApp Business API (Official)');
+        console.log('2. Use Baileys library (More complete unofficial)');
+        console.log('3. Use whatsapp-web.js (Puppeteer-based)');
+        console.log('4. Use browser automation with Puppeteer');
+        console.log('='.repeat(80));
+        console.log('');
+        
+        // Emit error instead of switching to simulation
+        this.emit('error', new Error('WhatsApp connection rejected - unofficial clients not supported'));
     }
     
     handleError(error, context, retryCount) {

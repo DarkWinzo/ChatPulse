@@ -280,12 +280,6 @@ export class WebSocketManager extends EventEmitter {
             return;
         }
         
-        // Don't reconnect if in simulation mode
-        if (this.simulationMode) {
-            logger.debug('In simulation mode, stopping reconnection attempts');
-            return;
-        }
-        
         this.reconnectAttempts++;
         const delay = this.reconnectDelay * Math.pow(2, this.reconnectAttempts - 1); // Exponential backoff
         
